@@ -112,7 +112,7 @@ const Cropzone = fabric.util.createClass(
       ctx.scale(originalScaleX, originalScaleY);
 
       // Render outer rect
-      this._fillOuterRect(ctx, 'rgba(0, 0, 0, 0.5)');
+      this._fillOuterRect(ctx, 'rgba(0, 0, 0, 0.3)');
 
       if (this.options.lineWidth) {
         this._fillInnerRect(ctx);
