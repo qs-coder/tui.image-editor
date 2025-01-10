@@ -16,6 +16,7 @@ import {
   keyCodes,
   rejectMessages,
   OBJ_TYPE,
+  zoomModes,
 } from '@/consts';
 
 const {
@@ -712,6 +713,35 @@ class ImageEditor {
   }
 
   /**
+   * start hand mode
+   */
+  startHandMode() {
+    const zoomMode = this._graphics.getZoomMode();
+    this.stopDrawingMode();
+    if (zoomMode !== zoomModes.HAND) {
+      this._graphics.startHandMode();
+    }
+  }
+
+  /**
+   * end hand mode
+   */
+  endHandMode() {
+    const zoomMode = this._graphics.getZoomMode();
+    this.stopDrawingMode();
+    if (zoomMode === zoomModes.HAND) {
+      this._graphics.endHandMode();
+    }
+  }
+
+  /**
+   * get canvas image center
+   */
+  getCenterPoint() {
+    return this._graphics.canvasImage.getCenterPoint();
+  }
+
+  /**
    * Load image from file
    * @param {File} imgFile - Image file
    * @param {string} [imageName] - imageName
@@ -942,6 +972,7 @@ class ImageEditor {
    * });
    */
   rotate(angle, isSilent) {
+    console.log('isSilent',isSilent)
     return this._rotate('rotate', angle, isSilent);
   }
 

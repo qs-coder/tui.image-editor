@@ -226,6 +226,12 @@ export default class Shape extends Component {
 
       this._bindEventOnShape(shapeObj);
 
+      shapeObj.hasBorders = false;
+
+      console.log('shapObe',shapeObj)
+      shapeObj.borderColor ='black'
+      console.log('shapObe',shapeObj)
+
       canvas.add(shapeObj).setActiveObject(shapeObj);
 
       this._resetPositionFillFilter(shapeObj);

@@ -562,10 +562,49 @@ class Zoom extends Component {
   _onMouseMoveWithHandMode({ e }) {
     const canvas = this.getCanvas();
     const { x, y } = canvas.getPointer(e);
+
+    
     const deltaX = x - this._startHandPoint.x;
     const deltaY = y - this._startHandPoint.y;
 
-    this._movePointOfZoom({ x: deltaX, y: deltaY });
+    console.log('deltaX',deltaX)
+    console.log('deltaY',deltaY)
+
+    const canvasImage = this.getCanvasImage()
+    const bounding = canvasImage.getBoundingRect();
+    console.log( bounding)
+
+    const halfWidth = Math.floor(bounding.width/2);
+    const left = Math.floor(Math.abs(bounding.left))
+    // 左移动
+    if(bounding.left<0 && deltaX>0 && Math.abs(deltaX) >  Math.abs(deltaY) ){
+      this._movePointOfZoom({ x: deltaX, y: 0 });
+    }
+    else if( bounding.left>0 && deltaX>0 && Math.abs(deltaX) >  Math.abs(deltaY) ){
+      this._movePointOfZoom({ x: -bounding.left, y: 0 });
+    }
+
+    // 右移动
+    if(left< halfWidth  && deltaX <0 &&  Math.abs(deltaX) >  Math.abs(deltaY) ){
+      this._movePointOfZoom({ x: deltaX, y: 0 });
+    }else if(left >halfWidth  && deltaX <0 &&  Math.abs(deltaX) >  Math.abs(deltaY) ){
+      this._movePointOfZoom({ x: left-halfWidth, y: 0 });
+    }
+   
+    // 上移动
+    const halfHeight = Math.floor(bounding.height/2);
+    const top = Math.floor(Math.abs(bounding.top))
+    if(bounding.top<0 && deltaY>0 &&  Math.abs(deltaX) < Math.abs(deltaY) ){
+      this._movePointOfZoom({ x: 0, y: deltaY });
+    }else if(bounding.top>0 && deltaY>0 &&  Math.abs(deltaX) < Math.abs(deltaY)){
+      this._movePointOfZoom({ x: 0, y: -bounding.top });
+    }
+    // 下移动
+    if(top<halfHeight && deltaY<0 &&  Math.abs(deltaX) < Math.abs(deltaY)){
+      this._movePointOfZoom({ x: 0, y: deltaY });
+    }else if(top>halfHeight && deltaY<0 &&  Math.abs(deltaX) < Math.abs(deltaY)){
+      this._movePointOfZoom({ x: 0, y: top-halfHeight });
+    }
   }
 
   /**
@@ -666,8 +705,8 @@ class Zoom extends Component {
   _addScrollBar() {
     const canvas = this.getCanvas();
 
-    canvas.add(this._horizontalScroll);
-    canvas.add(this._verticalScroll);
+    // canvas.add(this._horizontalScroll);
+    // canvas.add(this._verticalScroll);
 
     if (this.scrollBarTid) {
       clearTimeout(this.scrollBarTid);

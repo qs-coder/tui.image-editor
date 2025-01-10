@@ -38,6 +38,11 @@ var $btnLoadMaskImage = $('#input-mask-image-file');
 var $btnApplyMask = $('#btn-apply-mask');
 var $btnClose = $('.close');
 
+var $btnImageZoomIn = $('#btn-image-zoomIn');
+var $btnImageZoomOut = $('#btn-image-zoomOut');
+var $btnImageMasik = $('#btn-image-masik');
+
+
 // Input etc.
 var $inputRotationRange = $('#input-rotation-range');
 var $inputBrushWidthRange = $('#input-brush-width-range');
@@ -95,13 +100,25 @@ var $selectBlendType = $('[name="select-blend-type"]');
 
 // Image editor
 var imageEditor = new tui.ImageEditor('.tui-image-editor', {
-  cssMaxWidth: 700,
-  cssMaxHeight: 500,
+  cssMaxWidth: 800,
+  cssMaxHeight: 600,
   selectionStyle: {
     cornerSize: 20,
     rotatingPointOffset: 70,
   },
 });
+
+console.log('imageEditor',imageEditor)
+console.log('imageEditor', imageEditor._graphics)
+
+var container = document.getElementsByClassName('tui-image-editor-canvas-container')[0]
+console.log(222,container)
+
+container.addEventListener('mouseup',(e)=>{
+
+  const res = imageEditor.getDrawingMode()
+  console.log('get mode',res)
+})
 
 // Color picker for free drawing
 var brushColorpicker = tui.colorPicker.create({
@@ -192,6 +209,8 @@ function getBrushSettings() {
   };
 }
 
+
+
 function activateShapeMode() {
   if (imageEditor.getDrawingMode() !== 'SHAPE') {
     imageEditor.stopDrawingMode();
@@ -207,6 +226,8 @@ function activateTextMode() {
   if (imageEditor.getDrawingMode() !== 'TEXT') {
     imageEditor.stopDrawingMode();
     imageEditor.startDrawingMode('TEXT');
+    // imageEditor.changeSelectableAll(false)
+    // imageEditor.deactivateAll()
   }
 }
 
@@ -281,7 +302,7 @@ function applyOrRemoveFilter(applying, type, options) {
 // Attach image editor custom events
 imageEditor.on({
   objectAdded: function (objectProps) {
-    console.info(objectProps);
+    console.info('addd',objectProps);
   },
   undoStackChanged: function (length) {
     if (length) {
@@ -305,15 +326,19 @@ imageEditor.on({
     }
   },
   addText: function (pos) {
+    console.log('xxxx')
     imageEditor
-      .addText('Double Click', {
+      .addText('', {
         position: pos.originPosition,
+        styles:{fontSize:40}
       })
       .then(function (objectProps) {
         console.log(objectProps);
       });
   },
   objectActivated: function (obj) {
+    console.log('objectActivated')
+    console.log(obj)
     activeObjectId = obj.id;
     if (obj.type === 'rect' || obj.type === 'circle' || obj.type === 'triangle') {
       showSubMenu('shape');
@@ -327,9 +352,13 @@ imageEditor.on({
       showSubMenu('text');
       setTextToolbar(obj);
       activateTextMode();
+    }else if(obj.type==="image"){
+      imageEditor.deactivateAll()
     }
+
   },
   mousedown: function (event, originPointer) {
+    console.log(originPointer)
     if ($imageFilterSubMenu.is(':visible') && imageEditor.hasFilter('colorFilter')) {
       imageEditor.applyFilter('colorFilter', {
         x: parseInt(originPointer.x, 10),
@@ -338,6 +367,22 @@ imageEditor.on({
     }
   },
 });
+
+$btnImageZoomIn.on('click',function(){
+  const centerPoint= imageEditor.getCenterPoint();
+  console.log(centerPoint)
+  imageEditor.zoom({...centerPoint,zoomLevel:"2"})
+  imageEditor.startHandMode()
+})
+
+$btnImageZoomOut.on('click',function(){
+  const centerPoint= imageEditor.getCenterPoint();
+  imageEditor.zoom({...centerPoint,zoomLevel:"0.2"})
+})
+
+$btnImageMasik.on('click',()=>{
+  console.log(111)
+})
 
 // Attach button click event listeners
 $btns.on('click', function () {
@@ -400,6 +445,7 @@ $btnClose.on('click', function () {
 });
 
 $btnApplyCrop.on('click', function () {
+  console.log('dddd',imageEditor.getCropzoneRect())
   imageEditor.crop(imageEditor.getCropzoneRect()).then(function () {
     imageEditor.stopDrawingMode();
     resizeEditor();
@@ -434,8 +480,30 @@ $btnResetFlip.on('click', function () {
   });
 });
 
+var rotateNum =0;
+
 $btnRotateClockwise.on('click', function () {
-  imageEditor.rotate(30);
+   const centerPoint= imageEditor.getCenterPoint();
+  imageEditor.zoom({...centerPoint,zoomLevel:"1"})
+  const res = imageEditor.rotate(90).then((res)=>{
+    console.log('rotate',res)
+    const centerPoint= imageEditor.getCenterPoint();
+    console.log(centerPoint)
+    imageEditor.zoom({...centerPoint,zoomLevel:"2"})
+  });
+  
+  rotateNum = rotateNum+1
+  // if(rotateNum==1){
+  //   const centerPoint= imageEditor.getCenterPoint();
+  //   console.log(centerPoint)
+  //   imageEditor.zoom({...centerPoint,zoomLevel:"2"})
+  // }
+  // if(rotateNum==2){
+  //   const centerPoint= imageEditor.getCenterPoint();
+  //   console.log(centerPoint)
+  //   imageEditor.zoom({...centerPoint,zoomLevel:"2"})
+  // }
+ 
 });
 
 $btnRotateCounterClockWise.on('click', function () {
@@ -469,8 +537,9 @@ $inputImage.on('change', function (event) {
   }
 
   file = event.target.files[0];
+  console.log('dddddd')
   imageEditor.loadImageFromFile(file).then(function (result) {
-    console.log(result);
+    console.log('loadimage',result);
     imageEditor.clearUndoStack();
   });
 });
@@ -481,6 +550,7 @@ $btnDownload.on('click', function () {
   var blob, type, w;
 
   if (supportingFileAPI) {
+    console.log('dddddd')
     blob = base64ToBlob(dataURL);
     type = blob.type.split('/')[1];
     if (imageName.split('.').pop() !== type) {
@@ -504,13 +574,27 @@ $btnDrawLine.on('click', function () {
   $selectLine.eq(0).change();
 });
 
+
+$btnImageMasik.on('click',()=>{
+  var settings = getBrushSettings();
+  // console.log('setting',settings)
+  settings.mosaic=true
+  settings.width=80
+  settings.imageEditor = imageEditor
+  const res = imageEditor.startDrawingMode('FREE_DRAWING', settings);
+})
+
 $selectLine.on('change', function () {
   var mode = $(this).val();
   var settings = getBrushSettings();
 
+  console.log('ddddd',settings)
+  settings.width=4
+
   imageEditor.stopDrawingMode();
   if (mode === 'freeDrawing') {
-    imageEditor.startDrawingMode('FREE_DRAWING', settings);
+    const res = imageEditor.startDrawingMode('FREE_DRAWING', settings);
+    console.log('freedd',res)
   } else {
     imageEditor.startDrawingMode('LINE_DRAWING', settings);
   }
@@ -530,12 +614,19 @@ $btnDrawShape.on('click', function () {
   shapeType = $('[name="select-shape-type"]:checked').val();
 
   shapeOptions.stroke = '#000000';
-  shapeOptions.fill = '#ffffff';
+
+  var shapeOption = {
+    type: 'filter',
+    filter: [{ pixelate: PIXELATE_FILTER_DEFAULT_VALUE }],
+  };
+  shapeOptions.fill = shapeOption;
 
   shapeOptions.strokeWidth = Number($inputStrokeWidthRange.val());
 
   // step 2. set options to draw shape
   imageEditor.setDrawingShape(shapeType, shapeOptions);
+
+  imageEditor.changeSelectableAll(false)
 
   // step 3. start drawing shape mode
   activateShapeMode();
@@ -607,6 +698,12 @@ $inputStrokeWidthRange.on('change', function () {
 
 // control text mode
 $btnText.on('click', function () {
+
+  imageEditor.loadImageFromURL(imageEditor.toDataURL(), 'FilterImage').then(function () {
+    console.log('load mask')
+   
+  });
+
   showSubMenu('text');
   activateTextMode();
 });
@@ -746,13 +843,22 @@ $btnLoadMaskImage.on('change', function () {
 
   if (file) {
     imgUrl = URL.createObjectURL(file);
+    console.log('imgUrl',imgUrl)
+
+    console.log('blobUrl',imageEditor.toDataURL())
 
     imageEditor.loadImageFromURL(imageEditor.toDataURL(), 'FilterImage').then(function () {
+      console.log('load mask')
       imageEditor.addImageObject(imgUrl).then(function (objectProps) {
         URL.revokeObjectURL(file);
-        console.log(objectProps);
+        console.log(1111111,objectProps);
       });
     });
+
+    // imageEditor.addImageObject(imgUrl).then(function (objectProps) {
+    //   URL.revokeObjectURL(file);
+    //   console.log(1111111,objectProps);
+    // });
   }
 });
 
@@ -911,10 +1017,14 @@ $inputRangeColorFilterValue.on('change', function () {
 // Etc..
 
 // Load sample image
-imageEditor.loadImageFromURL('img/sampleImage.jpg', 'SampleImage').then(function (sizeValue) {
-  console.log(sizeValue);
+imageEditor.loadImageFromURL('img/SampleImage.jpg', 'SampleImage').then(function (sizeValue) {
+  console.log('ssss',sizeValue);
   imageEditor.clearUndoStack();
 });
+
+imageEditor.startHandMode()
+
+console.log(imageEditor._graphics)
 
 // IE9 Unselectable
 $('.menu').on('selectstart', function () {

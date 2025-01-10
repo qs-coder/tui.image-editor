@@ -132,6 +132,8 @@ class Graphics {
      */
     this._componentMap = {};
 
+    this._zoomLevel = 1;
+
     /**
      * fabric event handlers
      * @type {Object.<string, function>}
@@ -462,6 +464,7 @@ class Graphics {
     const zoom = this.getComponent(components.ZOOM);
 
     zoom.zoom({ x, y }, zoomLevel);
+    this._zoomLevel = zoomLevel
   }
 
   /**
@@ -584,9 +587,21 @@ class Graphics {
       canvasImage = this.canvasImage;
     }
 
-    const { width, height } = canvasImage.getBoundingRect();
+    let { width, height } = canvasImage.getBoundingRect();
+
+    if(this._zoomLevel!==1){
+      width= width/this._zoomLevel
+      height= height/this._zoomLevel
+    }
+
+    console.log('adjustimage',width,height)
+
+    console.log('adjustmax',this.cssMaxWidth,this.cssMaxHeight)
+
+    // 修改了 _calcMaxDimension
     const maxDimension = this._calcMaxDimension(width, height);
 
+    console.log('maxDimension',maxDimension)
     this.setCanvasCssDimension({
       width: '100%',
       height: '100%', // Set height '' for IE9
@@ -1046,8 +1061,10 @@ class Graphics {
   _calcMaxDimension(width, height) {
     const wScaleFactor = this.cssMaxWidth / width;
     const hScaleFactor = this.cssMaxHeight / height;
-    let cssMaxWidth = Math.min(width, this.cssMaxWidth);
-    let cssMaxHeight = Math.min(height, this.cssMaxHeight);
+    // let cssMaxWidth = Math.min(width, this.cssMaxWidth);
+    // let cssMaxHeight = Math.min(height, this.cssMaxHeight);
+    let cssMaxWidth = this.cssMaxWidth;
+    let cssMaxHeight = this.cssMaxHeight;
 
     if (wScaleFactor < 1 && wScaleFactor < hScaleFactor) {
       cssMaxWidth = width * wScaleFactor;

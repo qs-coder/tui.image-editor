@@ -488,6 +488,7 @@ class Text extends Component {
    * @private
    */
   _onFabricSelect(fEvent) {
+    console.log('ssssssss')
     this.isPrevEditing = true;
 
     this.setSelectedInfo(fEvent.target, true);
@@ -505,11 +506,11 @@ class Text extends Component {
       return;
     }
 
-    if (this.isPrevEditing) {
-      this.isPrevEditing = false;
+    // if (this.isPrevEditing) {
+    //   this.isPrevEditing = false;
 
-      return;
-    }
+    //   return;
+    // }
 
     this._fireAddText(fEvent);
   }
