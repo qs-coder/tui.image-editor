@@ -78,16 +78,82 @@ class FreeDrawing extends Component {
     canvas.off('mouse:down', this._handlers.mousedown);
   }
 
+
+
   /**
    * Set mosaic
    */
   setMosaic(setting) {
+    
     this.imageEditor = setting.imageEditor;
     this.width = setting.width;
     const canvas = this.getCanvas();
     canvas.selection = false;
-    canvas.on('mouse:down', this._handlers.mousedown);
+    canvas.isDrawingMode = true;
+    const ctx = canvas.contextContainer;
+    const originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    console.log(originalImageData)
+
+    let mosaicImageData = this.toMosaicImageData(originalImageData);
+
+
+    const patternCanvas = fabric.document.createElement('canvas'); 
+    const patternCtx  = patternCanvas.getContext('2d');
+    patternCanvas.width = canvas.width
+    patternCanvas.height = canvas.height
+    patternCtx.putImageData(mosaicImageData,0,0)
+
+    var texturePatternBrush = new fabric.PatternBrush(canvas);
+    texturePatternBrush.source = patternCanvas;
+    canvas.freeDrawingBrush = texturePatternBrush;
+    canvas.freeDrawingBrush.width=50
   }
+
+  toMosaicImageData(imageData) {
+		// 定义马赛克方格大小（越大越模糊）
+		const suquareSize = 50;
+		let data = imageData.data;
+    const canvas ={ width:imageData.width,height:imageData.height}
+		//首先根据宽高遍历整个图片获取到对应的方格
+		for (let i = 0; i < canvas.height; i += suquareSize) {
+			for (let j = 0; j < canvas.width; j += suquareSize) {
+				let totalR = 0;
+				let totalG = 0;
+				let totalB = 0;
+				let totalA = 0;
+				let count = 0;
+				//遍历当前方格的每个像素将其RGBA值累加起来
+				for (let y = i; y < i + suquareSize && y < canvas.height; y++) {
+					for (let x = j; x < j + suquareSize && x < canvas.width; x++) {
+						//y * canvas.width + x就能计算出当前像素在整个图片中的索引
+						//再乘以4是因为imageData.data每个像素用4个值表示
+						//pixelIndex就是当前像素在imageData.data的起始索引也就是它的R值
+						let pixelIndex = (y * canvas.width + x) * 4;
+						totalR += data[pixelIndex];
+						totalG += data[pixelIndex + 1];
+						totalB += data[pixelIndex + 2];
+						totalA += data[pixelIndex + 3];
+						count++;
+					}
+				}
+				let avgR = totalR / count;
+				let avgG = totalG / count;
+				let avgB = totalB / count;
+				let avgA = totalA / count;
+				// 遍历的逻辑与上面一模一样，这一步是将方格内的每个像素的RGBA值替换为平均值
+				for (let y = i; y < i + suquareSize && y < canvas.height; y++) {
+					for (let x = j; x < j + suquareSize && x < canvas.width; x++) {
+						let pixelIndex = (y * canvas.width + x) * 4;
+						data[pixelIndex] = avgR;
+						data[pixelIndex + 1] = avgG;
+						data[pixelIndex + 2] = avgB;
+						data[pixelIndex + 3] = avgA;
+					}
+				}
+			}
+		}
+		return imageData;
+	}
 
   /**
    * MouseDown event handler on canvas
@@ -151,7 +217,9 @@ class FreeDrawing extends Component {
     const response = await fetch(dataURL);
     const blob = await response.blob();
     const imgUrl = URL.createObjectURL(blob);
-    this.imageEditor.invoke('addImageObject', imgUrl);
+    //this.imageEditor.invoke('addImageObject', imgUrl);
+   this.imageEditor.addImageObject(imgUrl)
+    console.log(this.imageEditor)
     const canvas = this.getCanvas();
     canvas.off({
       'mouse:move': this._handlers.mousemove,
