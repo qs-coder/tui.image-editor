@@ -18,6 +18,8 @@ class FreeDrawing extends Component {
      * @type {number}
      */
     this.width = 12;
+    this.pencilBrush = null;
+    this.patternBrush = null;
 
     /**
      * fabric.Color instance for brush color
@@ -41,7 +43,7 @@ class FreeDrawing extends Component {
    * @param {{width: ?number, color: ?string}} [setting] - Brush width & color
    */
   start(setting) {
-    console.log(setting);
+    console.log('drawingsetting',setting);
     if (setting?.mosaic) {
       this.setMosaic(setting);
     } else {
@@ -57,7 +59,14 @@ class FreeDrawing extends Component {
    * @param {{width: ?number, color: ?string}} [setting] - Brush width & color
    */
   setBrush(setting) {
-    const brush = this.getCanvas().freeDrawingBrush;
+    const canvas =  this.getCanvas()
+    if(!this.pencilBrush){
+      this.pencilBrush = new fabric.PencilBrush(canvas)
+    }
+
+    canvas.freeDrawingBrush = this.pencilBrush;
+   
+    const brush = canvas.freeDrawingBrush;
 
     setting = setting || {};
     this.width = setting.width || this.width;
@@ -85,11 +94,22 @@ class FreeDrawing extends Component {
    */
   setMosaic(setting) {
     
-    this.imageEditor = setting.imageEditor;
-    this.width = setting.width;
     const canvas = this.getCanvas();
     canvas.selection = false;
     canvas.isDrawingMode = true;
+
+    if(!this.patternBrush){
+      this.setPatternBrush()
+    }
+   
+    canvas.freeDrawingBrush = this.patternBrush;
+    canvas.freeDrawingBrush.width=setting.width
+  }
+
+  setPatternBrush() {
+
+    const canvas = this.getCanvas();
+    
     const ctx = canvas.contextContainer;
     const originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     console.log(originalImageData)
@@ -103,10 +123,11 @@ class FreeDrawing extends Component {
     patternCanvas.height = canvas.height
     patternCtx.putImageData(mosaicImageData,0,0)
 
-    var texturePatternBrush = new fabric.PatternBrush(canvas);
-    texturePatternBrush.source = patternCanvas;
-    canvas.freeDrawingBrush = texturePatternBrush;
-    canvas.freeDrawingBrush.width=50
+    var patternBrush = new fabric.PatternBrush(canvas);
+    patternBrush.source = patternCanvas;
+
+    this.patternBrush  = patternBrush
+   
   }
 
   toMosaicImageData(imageData) {
