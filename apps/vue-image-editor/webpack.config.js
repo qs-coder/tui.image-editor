@@ -10,7 +10,7 @@ module.exports = {
   entry: './src/index.js',
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'toastui-vue-image-editor.js',
+    filename: 'vue-image-editor.js',
     library: { type: 'commonjs2' },
   },
   resolve: {

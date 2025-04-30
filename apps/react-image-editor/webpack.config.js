@@ -8,7 +8,7 @@ module.exports = () => ({
   mode: 'production',
   entry: './src/index.js',
   output: {
-    filename: 'toastui-react-image-editor.js',
+    filename: 'react-image-editor.js',
     path: path.resolve(__dirname, 'dist'),
     library: { type: 'commonjs2' },
   },

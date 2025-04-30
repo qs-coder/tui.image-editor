@@ -71,16 +71,16 @@ npm install --save @toast-ui/vue-image-editor
 
 - Using `<script>`
 
-  If you just add javascript file to your html, you use `toastui-vue-image-editor.js` downloaded. Insert `toastui-vue-image-editor.js` with `vue` in your html like this:
+  If you just add javascript file to your html, you use `vue-image-editor.js` downloaded. Insert `vue-image-editor.js` with `vue` in your html like this:
 
   ```html
   <script src="https://cdn.jsdelivr.net/npm/vue"></script>
-  <script src="path/to/toastui-vue-image-editor.js"></script>
+  <script src="path/to/vue-image-editor.js"></script>
   ```
 
 - Using only Vue wrapper component (Single File Component)
 
-  `toastui-vue-image-editor.js` has all of the tui.ImageEditor. If you only need vue wrapper component, you can use `@toast-ui/vue-image-editor/src/ImageEditor.vue` like this:
+  `vue-image-editor.js` has all of the tui.ImageEditor. If you only need vue wrapper component, you can use `@toast-ui/vue-image-editor/src/ImageEditor.vue` like this:
 
   ```js
   import ImageEditor from '@toast-ui/vue-image-editor/src/ImageEditor.vue';
