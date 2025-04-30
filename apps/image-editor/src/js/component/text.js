@@ -502,9 +502,11 @@ class Text extends Component {
   _onFabricMouseDown(fEvent) {
     const obj = fEvent.target;
 
-    if (obj && !obj.isType('text')) {
-      return;
-    }
+    console.log(1111)
+
+    // if (obj && !obj.isType('text')) {
+    //   return;
+    // }
 
     // if (this.isPrevEditing) {
     //   this.isPrevEditing = false;
@@ -525,7 +527,7 @@ class Text extends Component {
     const e = fEvent.e || {};
     const originPointer = this.getCanvas().getPointer(e);
 
-    if (!obj) {
+    if (true) {
       this.fire(events.ADD_TEXT, {
         originPosition: {
           x: originPointer.x,
