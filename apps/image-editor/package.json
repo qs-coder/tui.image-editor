@@ -1,5 +1,5 @@
 {
-  "name": "tui-image-editor",
+  "name": "@qs-coder/tui-image-editor",
   "version": "3.15.3",
   "description": "TOAST UI ImageEditor",
   "keywords": [
